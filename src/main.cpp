@@ -2,25 +2,24 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "texture.h"
 #include "shader.h"
 #include "vao.h"
 #include "vbo.h"
 #include "ebo.h"
 
-// Define vertices for a triangle centered at (0,0,0) with colors
+// Define vertices for a square with colors
 GLfloat vertices[] = {
-    -0.5f, -0.5f * float(sqrt(3)) / 3,  0.0f, 0.8f, 0.3f, 0.02f,
-     0.5f, -0.5f * float(sqrt(3)) / 3,  0.0f, 0.8f, 0.3f, 0.02f,
-     0.0f,  1.0f * float(sqrt(3)) / 3,  0.0f, 1.0f, 0.6f, 0.32f,
-    -0.25f, 0.25f * float(sqrt(3)) / 3, 0.0f, 0.9f, 0.45f, 0.17f,
-     0.25f, 0.25f * float(sqrt(3)) / 3, 0.0f, 0.9f, 0.45f, 0.17f,
-     0.0f, -0.5f * float(sqrt(3)) / 3,  0.0f, 0.8f, 0.3f, 0.02f
+    // positions        // colors         // texture coords
+    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+     0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 };
 
 GLuint indices[] = {
-    0, 3, 5,
-    3, 2, 4,
-    5, 4, 1
+    0, 2, 1,
+    0, 3, 2
 };
 
 // Callback function to handle window resize events
@@ -42,7 +41,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window and OpenGL context
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 800, "OpenGL", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to open GLFW window" << std::endl;
         glfwTerminate();
@@ -73,12 +72,17 @@ int main() {
     EBO ebo(indices, sizeof(indices));
 
     // Link VBO attributes to VAO (position and color)
-    vao.linkAttribute(vbo, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-    vao.linkAttribute(vbo, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    
+    vao.linkAttribute(vbo, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
+    vao.linkAttribute(vbo, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    vao.linkAttribute(vbo, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
     vao.unbind(); 
     vbo.unbind();
     ebo.unbind();
+
+    // Load texture
+    Texture texture("../textures/grass.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+    texture.texUnit(shader, "tex0", 0);
 
     // Main render loop
     while(!glfwWindowShouldClose(window)) {
@@ -88,11 +92,14 @@ int main() {
         // Use shader program
         shader.activate();
 
+        // Bind the texture
+        texture.bind();
+
         // Bind the vertex array object
         vao.bind();
 
-        // Draw 9 indices as triangles
-        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+        // Draw 6 indices as triangles
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
@@ -106,6 +113,7 @@ int main() {
     vbo.cleanup();
     ebo.cleanup();
     shader.cleanup();
+    texture.cleanup();
 
     glfwTerminate();
     return 0;

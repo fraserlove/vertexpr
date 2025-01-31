@@ -1,7 +1,11 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+#include "camera.h"
 #include "texture.h"
 #include "shader.h"
 #include "vao.h"
@@ -10,16 +14,21 @@
 
 // Define vertices for a square with colors
 GLfloat vertices[] = {
-    // positions        // colors         // texture coords
-    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-     0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-     0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+    // positions        // colors            // texture coords
+    -0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
+    -0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
+     0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f,
+     0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f,
+     0.0f, 0.8f,  0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f
 };
 
 GLuint indices[] = {
-    0, 2, 1,
-    0, 3, 2
+    0, 1, 2,
+    0, 2, 3,
+    0, 1, 4,
+    1, 2, 4,
+    2, 3, 4,
+    3, 0, 4
 };
 
 // Callback function to handle window resize events
@@ -84,13 +93,24 @@ int main() {
     Texture texture("../textures/grass.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
     texture.texUnit(shader, "tex0", 0);
 
+    Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+
+    glEnable(GL_DEPTH_TEST);
+
     // Main render loop
     while(!glfwWindowShouldClose(window)) {
         // Clear the color buffer
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use shader program
         shader.activate();
+
+        // Update camera inputs
+        camera.inputs(window);
+
+        // Update camera matrix
+        camera.updateMatrix(45.0f, 0.1f, 100.0f);
+        camera.matrix(shader, "camMatrix");
 
         // Bind the texture
         texture.bind();
@@ -99,7 +119,7 @@ int main() {
         vao.bind();
 
         // Draw 6 indices as triangles
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
         // Swap front and back buffers
         glfwSwapBuffers(window);

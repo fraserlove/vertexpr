@@ -13,36 +13,16 @@
 #include "ebo.h"
 
 GLfloat vertices[] = {
-    // coordinates      colors               texCoord    normals
-	-0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
-	-0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 5.0f, 0.0f, -1.0f, 0.0f, 
-	 0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 5.0f, 0.0f, -1.0f, 0.0f,
-	 0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f, -1.0f, 0.0f,
-
-	-0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, -0.8f, 0.5f,  0.0f,
-	-0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, -0.8f, 0.5f,  0.0f,
-	 0.0f, 0.8f,  0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f, -0.8f, 0.5f,  0.0f,
-
-	-0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f, 0.5f, -0.8f,
-	 0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f, 0.5f, -0.8f,
-	 0.0f, 0.8f,  0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.0f, 0.5f, -0.8f,
-
-	 0.5f, 0.0f, -0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.8f, 0.5f,  0.0f,
-	 0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.8f, 0.5f,  0.0f,
-	 0.0f, 0.8f,  0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.8f, 0.5f,  0.0f,
-
-	 0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 5.0f, 0.0f, 0.0f, 0.5f,  0.8f,
-	-0.5f, 0.0f,  0.5f, 0.83f, 0.70f, 0.44f, 0.0f, 0.0f, 0.0f, 0.5f,  0.8f,
-	 0.0f, 0.8f,  0.0f, 0.92f, 0.86f, 0.76f, 2.5f, 5.0f, 0.0f, 0.5f,  0.8f
+    // coordinates      colors            texCoord    normals
+	-1.0f, 0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+	-1.0f, 0.0f, -1.0f,	0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+	 1.0f, 0.0f, -1.0f,	0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+	 1.0f, 0.0f,  1.0f,	0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f
 };
 
 GLuint indices[] = {
-	0, 1, 2,
-	0, 2, 3,
-	4, 6, 5,
-	7, 9, 8,
-	10, 12, 11,
-	13, 15, 14
+    0, 1, 2,
+	0, 2, 3
 };
 
 
@@ -161,9 +141,11 @@ int main() {
     glUniform4fv(glGetUniformLocation(shader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
     glUniform3fv(glGetUniformLocation(shader.ID, "lightPos"), 1, glm::value_ptr(lightPos));
 
-    // Load texture
-    Texture texture("../textures/grass.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+    // Load textures
+    Texture texture("../textures/texture.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
     texture.texUnit(shader, "tex0", 0);
+    Texture specular("../textures/specular.png", GL_TEXTURE_2D, 1, GL_RED, GL_UNSIGNED_BYTE);
+    specular.texUnit(shader, "tex1", 1);
 
     Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
@@ -186,8 +168,9 @@ int main() {
 
         glUniform3fv(glGetUniformLocation(shader.ID, "cameraPos"), 1, glm::value_ptr(camera.position));
 
-        // Bind the texture
+        // Bind the textures
         texture.bind();
+        specular.bind();
 
         // Bind the vertex array object
         vao.bind();
@@ -213,6 +196,10 @@ int main() {
     ebo.cleanup();
     shader.cleanup();
     texture.cleanup();
+    lightShader.cleanup();
+    lightVAO.cleanup();
+    lightVBO.cleanup();
+    lightEBO.cleanup();
 
     glfwTerminate();
     return 0;

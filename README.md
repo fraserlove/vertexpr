@@ -1,11 +1,20 @@
-# opengl
+# opengl-expr
+This is an OpenGL experiment using `glfw` for window management, `glad` for OpenGL function loading, and `glm` for mathematics and transformations.
 
-### Build Configuration
-The project uses VSCode for building. The build configuration in `tasks.json` should include the following arguments:
+## Build Instructions
+This project requires `cmake` to build. The project can be built using the following commands:
+
+```sh
+mkdir build
+cd build
+cmake ..
+make  # or "cmake --build ."
+```
+
+If you are using VSCode, you can use the following arguments in the `tasks.json` file to build the project:
 ```
 "args": [
     "-std=c++17",
-    "-fdiagnostics-color=always",
     "-g",
     "-I${workspaceFolder}/include",
     "-L${workspaceFolder}/lib",

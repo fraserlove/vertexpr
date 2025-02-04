@@ -1,19 +1,9 @@
 #include "shader.h"
-
-std::string readShaderFile(const char* filePath) {
-    std::ifstream shaderFile(filePath);
-    if (!shaderFile.is_open()) {
-        throw std::runtime_error("Failed to open shader file: " + std::string(filePath));
-    }
-    std::stringstream buffer;
-    buffer << shaderFile.rdbuf();
-    shaderFile.close();
-    return buffer.str();
-}
+#include "utils.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
-    std::string vertexCode = readShaderFile(vertexPath);
-    std::string fragmentCode = readShaderFile(fragmentPath);
+    std::string vertexCode = Utils::readFile(vertexPath);
+    std::string fragmentCode = Utils::readFile(fragmentPath);
 
     const char* vertexSource = vertexCode.c_str();
     const char* fragmentSource = fragmentCode.c_str();

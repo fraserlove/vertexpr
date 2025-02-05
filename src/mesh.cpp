@@ -39,8 +39,8 @@ void Mesh::draw(Shader& shader, Camera& camera, glm::mat4 matrix, glm::vec3 tran
         textures[i].texUnit(shader, (type + num).c_str(), i);
         textures[i].bind();
     }
-    glUniform3f(glGetUniformLocation(shader.ID, "cameraPos"), camera.position.x, camera.position.y, camera.position.z);
-    camera.matrix(shader, "camMatrix");
+    glUniform3fv(glGetUniformLocation(shader.ID, "cameraPos"), 1, glm::value_ptr(camera.position));
+    camera.matrix(shader, "transform");
 
     glm::mat4 trans = glm::mat4(1.0f);
     glm::mat4 rot = glm::mat4(1.0f);

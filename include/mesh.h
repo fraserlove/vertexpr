@@ -1,20 +1,26 @@
 #pragma once
 
-#include <string>
-
 #include "vao.h"
 #include "ebo.h"
 #include "camera.h"
 #include "texture.h"
 
 class Mesh {
-public:
+private:
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
 
+    glm::mat4 transform;
+
     VAO vao;
 
-    Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, std::vector<Texture>& textures);
-    void draw(Shader& shader, Camera& camera, glm::mat4 matrix = glm::mat4(1.0f), glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f), glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f));
+public:
+    Mesh(std::vector<Vertex>& vertices, std::vector<GLuint>& indices, std::vector<Texture>& textures, glm::mat4 transform = glm::mat4(1.0f));
+
+    void draw(Shader& shader, Camera& camera);
+
+    void rotate(glm::quat rotation);
+    void translate(glm::vec3 translation);
+    void scale(glm::vec3 scale);
 };

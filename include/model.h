@@ -1,33 +1,36 @@
 #pragma once
 
 #include <json.h>
+#include <map>
 
 #include "mesh.h"
 
 class Model {
-public:
-    Model(const char* path);
-    void draw(Shader& shader, Camera& camera);
-
 private:
     const char* path;
     std::vector<unsigned char> data;
     nlohmann::json json;
 
     std::vector<Mesh> meshes;
-    std::vector<glm::vec3> translations;
-    std::vector<glm::quat> rotations;
-    std::vector<glm::vec3> scales;
-    std::vector<glm::mat4> matrices;
 
-    std::vector<std::string> loadedTextureNames;
+    // Keep track of loaded textures to avoid loading the same texture multiple times
     std::vector<Texture> loadedTextures;
 
-    void loadMesh(unsigned int index);
+public:
+    Model(const char* path);
 
-    void traverseNode(unsigned int nextNode, glm::mat4 matrix = glm::mat4(1.0f));
+    void draw(Shader& shader, Camera& camera);
 
-    std::vector<unsigned char> import();
+    void rotate(glm::quat rotation);
+    void translate(glm::vec3 translation);
+    void scale(glm::vec3 scale);
+
+private:
+    void loadMesh(unsigned int index, glm::mat4 transform);
+
+    void traverseNode(unsigned int nextNode, glm::mat4 transform = glm::mat4(1.0f));
+
+    void import(const char* path);
     std::vector<float> getFloats(nlohmann::json accessor);
     std::vector<GLuint> getIndices(nlohmann::json accessor);
     std::vector<Texture> getTextures();

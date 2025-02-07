@@ -16,19 +16,25 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
     glCompileShader(fragmentShader);
 
-    ID = glCreateProgram();
-    glAttachShader(ID, vertexShader);
-    glAttachShader(ID, fragmentShader);
-    glLinkProgram(ID);
+    id = glCreateProgram();
+    glAttachShader(id, vertexShader);
+    glAttachShader(id, fragmentShader);
+    glLinkProgram(id);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    activate();
+}
+
+GLuint Shader::getId() const {
+    return id;
 }
 
 void Shader::activate() {
-    glUseProgram(ID);
+    glUseProgram(id);
 }
 
 void Shader::cleanup() {
-    glDeleteProgram(ID);
+    glDeleteProgram(id);
 }

@@ -1,73 +1,68 @@
 #include "camera.h"
 
-Camera::Camera(int width, int height, glm::vec3 position) : width(width), height(height), position(position) {}
-
-void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection = glm::mat4(1.0f);
-
-    view = glm::lookAt(position, position + orientation, up);
-    projection = glm::perspective(glm::radians(FOVdeg), (float)(width / height), nearPlane, farPlane);
-
-    camMatrix = projection * view;
+Camera::Camera(int width, int height, glm::vec3 position, float fov, float zNear, float zFar) : width(width), height(height), position(position) {
+    forward = glm::vec3(0.0f, 0.0f, -1.0f);
+    up = glm::vec3(0.0f, 1.0f, 0.0f);
+    projection = glm::perspective(glm::radians(fov), (float)(width / height), zNear, zFar);
+    
+    speed = 0.1f;
+    sensitivity = 100.0f;
 }
 
-void Camera::matrix(Shader& shader, const char* uniform) {
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(camMatrix));
+glm::mat4 Camera::getProjectionView() const {
+    return projectionView;
+}
+
+glm::vec3 Camera::getPosition() const {
+    return position;
+}
+
+void Camera::update() {
+    glm::mat4 view = glm::lookAt(position, position + forward, up);
+    projectionView = projection * view;
 }
 
 void Camera::inputs(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        position += speed * orientation;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        position -= speed * orientation;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        position -= speed * glm::normalize(glm::cross(orientation, up));
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        position += speed * glm::normalize(glm::cross(orientation, up));
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        position += speed * up;
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        position -= speed * up;
-    }
+    // Keyboard inputs
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) position += speed * forward;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) position -= speed * forward;
+    
+    glm::vec3 right = glm::normalize(glm::cross(forward, up));
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) position -= speed * right;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) position += speed * right;
+    
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) position += speed * up;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) position -= speed * up;
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        speed = 0.5f;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) {
-        speed = 0.1f;
-    }
+    // Sprint
+    speed = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) ? 0.5f : 0.1f;
 
+    // Mouse inputs
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-        if (firstClick) {
-            glfwSetCursorPos(window, (width / 2), (height / 2));
-            firstClick = false;
+        // Hide mouse and lock to center of screen while looking
+        if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_HIDDEN) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            glfwSetCursorPos(window, width / 2, height / 2);
         }
 
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
-        float rotX = sensitivity * (float)(mouseY - (height / 2)) / height;
-        float rotY = sensitivity * (float)(mouseX - (width / 2)) / width;
+        float rotX = sensitivity * (float)(mouseY - height / 2) / height;
+        float rotY = sensitivity * (float)(mouseX - width / 2) / width;
 
-        glm::vec3 newOrientation = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-rotX), glm::normalize(glm::cross(orientation, up)))) * orientation;
-        if (glm::dot(newOrientation, up) <= 0.1f || glm::dot(newOrientation, -up) <= 0.1f) {
-            orientation = newOrientation;
-        }
+        // Vertical rotation, lock so that the camera doesn't flip upside down
+        glm::vec3 newDirection = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-rotX), right)) * forward;
+        if (abs(glm::dot(newDirection, up)) < 0.99f) forward = newDirection;
 
-        orientation = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-rotY), up)) * orientation;
+        // Horizontal rotation
+        forward = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-rotY), up)) * forward;
+        forward = glm::normalize(forward);
 
-        glfwSetCursorPos(window, (width / 2), (height / 2));
+        glfwSetCursorPos(window, width / 2, height / 2);
     }
-    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+    else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        firstClick = true;
     }
 }

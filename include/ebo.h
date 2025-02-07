@@ -4,9 +4,14 @@
 #include <vector>
 
 class EBO {
+private:
+    GLuint id;
+
 public:
-    GLuint ID;
     EBO(std::vector<GLuint>& indices);
+
+    GLuint getId() const;
+    
     void bind();
     void unbind();
     void cleanup();

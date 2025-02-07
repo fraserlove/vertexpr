@@ -12,9 +12,14 @@ struct Vertex {
 };
 
 class VBO {
+private:
+    GLuint id;
+
 public:
-    GLuint ID;
     VBO(std::vector<Vertex>& vertices);
+
+    GLuint getId() const;
+    
     void bind();
     void unbind();
     void cleanup();

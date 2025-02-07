@@ -9,9 +9,14 @@
 std::string readShaderFile(const char* filePath);
 
 class Shader {
+private:
+    GLuint id;
+
 public:
-    GLuint ID;
     Shader(const char* vertexPath, const char* fragmentPath);
+
+    GLuint getId() const;
+
     void activate();
     void cleanup();
 };

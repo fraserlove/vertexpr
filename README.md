@@ -1,5 +1,5 @@
-# opengl-expr
-This is an OpenGL experiment using `glfw` for window management, `glad` for OpenGL function loading, and `glm` for mathematics and transformations. Features model loading, lighting (point, directional, and spot), and camera controls via mouse and keyboard inputs.
+# VertExpr
+An experimental OpenGL engine using `glfw` for window management, `glad` for OpenGL function loading, and `glm` for mathematics and transformations. Features model loading, lighting (point, directional, and spot), and camera controls via mouse and keyboard inputs.
 
 ## Build Instructions
 This project requires `cmake` to build and can be built using the following command:

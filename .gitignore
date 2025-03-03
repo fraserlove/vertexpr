@@ -1,14 +1,7 @@
-# Build artifacts
-/build/
-
-# Mac OS
-.DS_Store
-
-# VS Code
-/.vscode/
+build/
 
 # CMake-generated files
-/CMakeFiles/
-/CMakeCache.txt
-/Makefile
-/cmake_install.cmake
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake

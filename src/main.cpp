@@ -4,7 +4,7 @@
 #include "primitives.h"
 
 int main() {
-    Display display(800, 800, "OpenGL");
+    Display display(800, 800, "Verus");
 
     Shader shader("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
 
